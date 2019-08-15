@@ -23,6 +23,8 @@ interface IEthereumBalance {
   n_tx: number;
   unconfirmed_n_tx: number;
   final_n_tx: number;
+  nonce: number;
+  pool_nonce: number;
 }
 
 export default new (class {
