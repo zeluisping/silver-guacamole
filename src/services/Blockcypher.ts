@@ -31,12 +31,13 @@ export default new (class {
   async FetchEthereumBalance(
     address: string
   ): Promise<IEthereumBalance | null> {
-    const res = await Axios.get<IEthereumBalance>(
-      `https://api.blockcypher.com/v1/eth/main/addrs/${address}/balance`
-    );
-    if (res.status === 200) {
-      return res.data;
+    try {
+      const response = await Axios.get<IEthereumBalance>(
+        `https://api.blockcypher.com/v1/eth/main/addrs/${address}/balance`
+      );
+      return response.data;
+    } catch (e) {
+      return null;
     }
-    return null;
   }
 })();
