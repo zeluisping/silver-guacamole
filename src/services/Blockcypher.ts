@@ -1,4 +1,5 @@
 import Axios from "axios";
+import { Decimal } from "decimal.js";
 
 /*
 {
@@ -13,31 +14,46 @@ import Axios from "axios";
   "final_n_tx": 702
 }
 */
-interface IEthereumBalance {
+interface IEthereumBalance<T = number> {
   address: string;
-  total_received: number;
-  total_sent: number;
-  balance: number;
-  unconfirmed_balance: number;
-  final_balance: number;
+  total_received: T;
+  total_sent: T;
+  balance: T;
+  unconfirmed_balance: T;
+  final_balance: T;
   n_tx: number;
   unconfirmed_n_tx: number;
   final_n_tx: number;
-  nonce: number;
-  pool_nonce: number;
+}
+const IEthereumBalanceCurrencyKeys: (keyof IEthereumBalance)[] = [
+  "total_received",
+  "total_sent",
+  "balance",
+  "unconfirmed_balance",
+  "final_balance"
+];
+
+function ToDecimalBalance(
+  balance: IEthereumBalance<number | string>
+): IEthereumBalance<Decimal> {
+  const final: IEthereumBalance<Decimal> = balance as any;
+  for (const key of IEthereumBalanceCurrencyKeys) {
+    final[key] = new Decimal(balance[key]) as any;
+  }
+  return final;
 }
 
-export default new (class {
-  async FetchEthereumBalance(
+export default abstract class {
+  static async FetchEthereumBalance(
     address: string
-  ): Promise<IEthereumBalance | null> {
+  ): Promise<IEthereumBalance<Decimal> | null> {
     try {
       const response = await Axios.get<IEthereumBalance>(
         `https://api.blockcypher.com/v1/eth/main/addrs/${address}/balance`
       );
-      return response.data;
+      return ToDecimalBalance(response.data);
     } catch (e) {
       return null;
     }
   }
-})();
+}
